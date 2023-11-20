@@ -37,8 +37,8 @@ void StringSet::Resize(size_t newSize) {
     }
     for (int i = 0; i < tamanhoTabela; ++i) {
         if (!tabela[i].vazio && !tabela[i].retirada) {
-            int newHash = Hash(tabela[i].dado) % newSize;
-            while (!novaTabela[newHash].vazio) {
+            int newHash = tabela[i].dado.size() % newSize;
+            while (!novaTabela[newHash].vazio && !novaTabela[newHash].retirada) {
                 newHash = (newHash + 1) % newSize;
             }
             novaTabela[newHash] = tabela[i];
@@ -51,16 +51,21 @@ void StringSet::Resize(size_t newSize) {
 
 void StringSet::Inserir(string s) {
     int pos = Hash(s);
-    if (!Pertence(s)) {
-        while (!tabela[pos].vazio && tabela[pos].dado != s && !tabela[pos].retirada) {
-            pos = (pos + 1) % tamanhoTabela;
-        }
-        if (tabela[pos].vazio || tabela[pos].retirada) {
-            tabela[pos].dado = s;
-            tabela[pos].vazio = false;
-            tabela[pos].retirada = false;
-            ++tamanhoConjunto;
-        }
+
+    if (tabela[pos].dado == s) {
+        return;
+    }
+
+    while (!tabela[pos].vazio && (tabela[pos].dado != s) && !tabela[pos].retirada) {
+        pos = (pos + 1) % tamanhoTabela;
+    }
+
+    if ((tabela[pos].vazio || tabela[pos].retirada) && (tabela[pos].dado != s)) {
+        tabela[pos].dado = s;
+        tabela[pos].vazio = false;
+        tabela[pos].retirada = false;
+        ++tamanhoConjunto;
+
         if (tamanhoConjunto * 2 > tamanhoTabela) {
             Resize(2 * tamanhoTabela);
         }
@@ -81,9 +86,15 @@ void StringSet::Remover(string s) {
 
 bool StringSet::Pertence(string s) {
     int pos = Hash(s);
+    int inicial = pos;
+
     while (!tabela[pos].vazio && tabela[pos].dado != s && !tabela[pos].retirada) {
         pos = (pos + 1) % tamanhoTabela;
+        if (pos == inicial) {
+            break;
+        }
     }
+
     return !tabela[pos].vazio && tabela[pos].dado == s && !tabela[pos].retirada;
 }
 
